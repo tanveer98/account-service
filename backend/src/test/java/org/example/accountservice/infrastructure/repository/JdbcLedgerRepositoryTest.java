@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class JdbcLedgerRepositoryIntTest extends BaseIntegrationTest {
+class JdbcLedgerRepositoryTest extends BaseIntegrationTest {
 
     @Autowired
     JdbcLedgerRepository underTest;

@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class TransferServiceIntTest extends BaseIntegrationTest {
+class TransferServiceTest extends BaseIntegrationTest {
     @Autowired
     TransferService underTest;
 
@@ -32,38 +32,37 @@ class TransferServiceIntTest extends BaseIntegrationTest {
     void concurrentDebitRequestsShouldNotResultInOverDraft(BigDecimal debitAmount, int expectedSuccessCount, int expectedFailureCount, BigDecimal expectedCurrentAmount) throws Exception {
         var account = setupAccount(new UserId(123), new BigDecimal("100"), Currency.EUR);
         var threadCount = 10;
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch readyLatch = new CountDownLatch(threadCount);
-        CountDownLatch startlatch = new CountDownLatch(1);
-        CountDownLatch finishedLatch = new CountDownLatch(threadCount);
-        AtomicInteger failureCount = new AtomicInteger();
-        AtomicInteger successCount = new AtomicInteger();
+        try(ExecutorService executor = Executors.newFixedThreadPool(threadCount)) {
+            CountDownLatch readyLatch = new CountDownLatch(threadCount);
+            CountDownLatch startLatch = new CountDownLatch(1);
+            CountDownLatch finishedLatch = new CountDownLatch(threadCount);
+            AtomicInteger failureCount = new AtomicInteger();
+            AtomicInteger successCount = new AtomicInteger();
 
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(() -> {
-                readyLatch.countDown(); // signals when a thread is blocking behind startLatch
-                try {
-                    startlatch.await(); // all threads block here until startLatch is set to 0
-                    underTest.debit(new DebitAccountCommand(account.id(), debitAmount));
-                    successCount.incrementAndGet();
-                } catch (InsufficientBalanceError e) {
-                    failureCount.incrementAndGet();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    finishedLatch.countDown();
-                }
-            });
+            for (int i = 0; i < threadCount; i++) {
+                executor.submit(() -> {
+                    readyLatch.countDown(); // signals when a thread is blocking behind startLatch
+                    try {
+                        startLatch.await(); // all threads block here until startLatch is set to 0
+                        underTest.debit(new DebitAccountCommand(account.id(), debitAmount));
+                        successCount.incrementAndGet();
+                    } catch (InsufficientBalanceError e) {
+                        failureCount.incrementAndGet();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    } finally {
+                        finishedLatch.countDown(); // block main test runner thread until all executor threads finish
+                    }
+                });
+            }
+            readyLatch.await(); // wait until readyLatch is 0
+            startLatch.countDown(); // trigger all threads
+            finishedLatch.await(); // wait until all threads are finished
+
+            assertEquals(expectedSuccessCount, successCount.get());
+            assertEquals(expectedFailureCount, failureCount.get());
+            assertEquals(0, accountService.findById(account.id()).currentAmount().compareTo(expectedCurrentAmount));
         }
-        readyLatch.await(); // wait until readyLatch is 0
-        startlatch.countDown(); // trigger all threads
-        finishedLatch.await(); // wait until all threads are finished
-
-        assertEquals(expectedSuccessCount, successCount.get());
-        assertEquals(expectedFailureCount, failureCount.get());
-        assertEquals(0, accountService.findById(account.id()).currentAmount().compareTo(expectedCurrentAmount));
-
-        executor.close();
     }
 
     private Account setupAccount(UserId userId, BigDecimal amount, Currency currency) {
