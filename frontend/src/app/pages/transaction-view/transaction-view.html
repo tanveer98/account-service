@@ -1,0 +1,54 @@
+@if (transaction) {
+  <div style="padding: 24px;">
+    <button mat-icon-button [routerLink]="['/account', transaction.accountId]">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <h1 style="color: #3f51b5;">Transaction Document</h1>
+
+    <div #pdfContent
+         style="background: white; padding: 32px; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 550px; font-family: sans-serif;">
+      <h2 style="margin-top: 0; color: #3f51b5; border-bottom: 2px solid #3f51b5; padding-bottom: 8px;">OFFICIAL BANK
+        STATEMENT</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+        <tr style="height: 40px;">
+          <td style="font-weight: bold; color: #555;">Internal Tx ID:</td>
+          <td>{{ transaction.id }}</td>
+        </tr>
+        <tr style="height: 40px;">
+          <td style="font-weight: bold; color: #555;">Transaction UUID:</td>
+          <td style="font-family: monospace; font-size: 13px;">{{ transaction.transactionUuid }}</td>
+        </tr>
+        <tr style="height: 40px;">
+          <td style="font-weight: bold; color: #555;">Account ID:</td>
+          <td>{{ transaction.accountId }}</td>
+        </tr>
+        <tr style="height: 40px;">
+          <td style="font-weight: bold; color: #555;">Transaction Type:</td>
+          <td>
+            <mark style="padding: 4px 8px; background: #e0f2f1;">{{ transaction.transactionType }}</mark>
+          </td>
+        </tr>
+        <tr style="height: 40px;">
+          <td style="font-weight: bold; color: #555;">Transacted Amount:</td>
+          <td style="font-weight: bold; font-size: 18px;">{{ transaction.amount }} {{ transaction.currency }}</td>
+        </tr>
+        <tr style="height: 40px;">
+          <td style="font-weight: bold; color: #555;">Execution Date:</td>
+          <td>{{ transaction.createdAt | date:'medium' }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <button mat-raised-button color="primary" style="margin-top: 24px;" (click)="exportToPDF()">
+      <mat-icon style="margin-right: 8px;">download</mat-icon>
+      Export & Download PDF Summary
+    </button>
+  </div>
+} @else {
+  <div style="text-align: center; padding: 60px;">
+    <mat-spinner diameter="40" style="margin: 0 auto; margin-bottom: 16px;"></mat-spinner>
+    <p style="color: gray;">Loading transaction details...</p>
+  </div>
+}

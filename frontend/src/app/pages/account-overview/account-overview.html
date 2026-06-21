@@ -1,0 +1,57 @@
+@if (account) {
+  <div style="padding: 24px;">
+    <button mat-icon-button routerLink="/">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <h1 style="color: #3f51b5;">Account Overview</h1>
+
+    <mat-card style="margin-bottom: 24px; max-width: 400px;">
+      <mat-card-content>
+        <h3>Account ID: {{ account.id }}</h3>
+        <h2 style="color: #2e7d32;">Current
+          Balance: {{ account.currentAmount | number:'1.2-2' }} {{ account.currency }}</h2>
+      </mat-card-content>
+    </mat-card>
+
+    <div
+      style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h3>Historic Balance Flow (Time-Series)</h3>
+      <div style="max-height: 300px; position: relative;">
+        <canvas #balanceChart></canvas>
+      </div>
+    </div>
+
+    <h3>Transaction Log</h3>
+    <div (scroll)="onTableScroll($event)" style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; background: white;">
+      <mat-nav-list>
+        @for (tx of transactions; track tx.id) {
+          <mat-list-item [routerLink]="['/transaction', tx.id]">
+            <mat-icon matListItemIcon [style.color]="(tx.transactionType === 'CREDIT' || tx.transactionType === 'FX_CREDIT') ? 'green' : 'red'">
+              {{ (tx.transactionType === 'CREDIT' || tx.transactionType === 'FX_CREDIT') ? 'arrow_downward' : 'arrow_upward' }}
+            </mat-icon>
+            <span matListItemTitle style="font-weight: 500;">{{ tx.transactionType }} - {{ tx.amount }} {{ tx.currency }}</span>&nbsp;
+            <span matListItemLine>Date: {{ tx.createdAt | date:'medium' }} | UUID: {{ tx.transactionUuid }}</span>
+          </mat-list-item>
+        } @empty {
+          <div style="padding: 24px; text-align: center; color: gray;">No historical transactions found.</div>
+        }
+      </mat-nav-list>
+      @if (loading) {
+        <div style="text-align: center; padding: 16px; background: #fafafa; border-top: 1px solid #eee;">
+          <mat-spinner diameter="24" style="margin: 0 auto; display: inline-block; vertical-align: middle;"></mat-spinner>
+          <span style="color: gray; margin-left: 8px; font-size: 13px;">Fetching older records...</span>
+        </div>
+      }
+
+      @if (!hasMore && transactions.length > 0) {
+        <div style="text-align: center; padding: 12px; color: gray; font-size: 12px; background: #fafafa;">All history loaded from ledger.</div>
+      }
+    </div>
+  </div>
+} @else {
+  <div style="text-align: center; padding: 60px;">
+    <mat-spinner diameter="40" style="margin: 0 auto; margin-bottom: 16px;"></mat-spinner>
+    <p style="color: gray;">Loading account details from ledger...</p>
+  </div>
+}
