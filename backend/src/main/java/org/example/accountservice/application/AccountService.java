@@ -33,4 +33,11 @@ public class AccountService {
         var id = accountRepository.save(userId, currency, BigDecimal.ZERO, true);
         return findById(id);
     }
+
+    public boolean incrementBalance(AccountId accountId, BigDecimal incrementAmount) {
+        return accountRepository.incrementBalance(accountId, incrementAmount);
+    }
+    public boolean decrementBalance(AccountId accountId, BigDecimal decrementAmount) {
+        return accountRepository.decrementBalance(accountId, decrementAmount);
+    }
 }

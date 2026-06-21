@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+// only testing the overdraft scenario here, in prod there would be cases to cover credit, debit, exchange etc happy and unhappy paths too.
 class TransferServiceTest extends BaseIntegrationTest {
     @Autowired
     TransferService underTest;
