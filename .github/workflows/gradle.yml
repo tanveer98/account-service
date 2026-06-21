@@ -14,9 +14,11 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     permissions:
       contents: read
 
@@ -36,6 +38,9 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew build
 
+    - name: Run tests
+      run: ./gradlew test
+
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
     #
@@ -48,8 +53,10 @@ jobs:
     #   run: gradle build
 
   dependency-submission:
-
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     permissions:
       contents: write
 
