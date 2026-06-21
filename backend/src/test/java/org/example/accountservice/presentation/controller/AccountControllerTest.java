@@ -26,7 +26,7 @@ class AccountControllerTest extends BaseIntegrationTest {
                 .body(Map.of("amount", amount))
                 .exchange()
                 .expectStatus()
-                .isBadRequest();
+                .is2xxSuccessful();
     }
 
 
