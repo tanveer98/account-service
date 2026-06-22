@@ -3,4 +3,4 @@
 * [backend](./backend) -- spring boot webapp, requires JDK 21, use `./gradlew bootRun` to run
 
 ## Demo
-![Demo video](./demo/demo-video.mp4)
+![Demo video](./demo/demo-video.gif)
